@@ -1,13 +1,15 @@
 import SwiftUI
 
-// MARK: - Model
+// Модель цифры
 
 struct Digit: Identifiable, Equatable {
     let id = UUID()
     let value: Int
 }
 
-// MARK: - Custom Transition
+
+
+// Анимации
 
 struct DigitAppearModifier: ViewModifier {
     var progress: CGFloat
@@ -23,14 +25,16 @@ struct DigitAppearModifier: ViewModifier {
 
 extension AnyTransition {
     static var digitAppear: AnyTransition {
-        .modifier(
+        AnyTransition.modifier(
             active: DigitAppearModifier(progress: 0),
             identity: DigitAppearModifier(progress: 1)
         )
     }
 }
 
-// MARK: - Digit View
+
+
+// Цифра
 
 struct DigitView: View {
     let digit: Digit
@@ -38,12 +42,14 @@ struct DigitView: View {
     var body: some View {
         Text("\(digit.value)")
             .font(.system(size: 64, weight: .bold, design: .rounded))
-            .monospacedDigit()
             .transition(.digitAppear)
     }
 }
 
-// MARK: - Big Input Display
+
+
+
+// Инпут
 
 struct BigInputView: View {
     let digits: [Digit]
@@ -54,15 +60,13 @@ struct BigInputView: View {
                 DigitView(digit: digit)
             }
         }
-        .animation(
-            .spring(response: 0.35, dampingFraction: 0.7),
-            value: digits
-        )
         .frame(maxWidth: .infinity, minHeight: 120)
     }
 }
 
-// MARK: - Keyboard Button
+
+
+// Кнопка клавиатуры
 
 struct KeyPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -94,7 +98,10 @@ struct KeyButton: View {
     }
 }
 
-// MARK: - Custom Keyboard
+
+
+
+// Клавиатура
 
 struct CustomKeyboard: View {
     let onNumber: (Int) -> Void
@@ -130,11 +137,17 @@ struct CustomKeyboard: View {
     }
 }
 
-// MARK: - Main Screen
+
+
+
+// Экран
 
 struct ContentView: View {
     
     @State private var digits: [Digit] = []
+    
+    // Переключатель: true — ваш кастомный переход, false — стандартный (для быстрого отката)
+    @State private var useCustomTransition: Bool = false
     
     var body: some View {
         VStack(spacing: 32) {
@@ -153,7 +166,7 @@ struct ContentView: View {
         .padding()
     }
     
-    // MARK: - Actions
+    // Действия с суммой
     
     private func appendDigit(_ number: Int) {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
@@ -173,4 +186,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
