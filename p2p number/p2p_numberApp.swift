@@ -11,7 +11,7 @@ import SwiftUI
 struct p2p_numberApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WithNumericTextView()
         }
     }
 }
