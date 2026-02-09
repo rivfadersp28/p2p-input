@@ -28,8 +28,8 @@ struct WithNumericTextView: View {
     }
 
     private func deleteLast() {
-        guard !amountString.isEmpty else { return }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8), {
+        guard !amountString.isEmpty else { return } 
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7), {
             amountString.removeLast()
         })
     }

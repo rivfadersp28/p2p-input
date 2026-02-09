@@ -18,25 +18,92 @@ struct KeyPressStyle: ButtonStyle {
         var onPress: (() -> Void)?
         @State private var didTriggerPress = false
 
+        // Собственные состояния для анимации
+        @State private var scale: CGFloat = 1.0
+        @State private var highlightOpacity: CGFloat = 0.0
+
+        // Флаги управления последовательностью
+        @State private var isAnimatingDown = false   // идет фаза "вниз"
+        @State private var isAnimatingUp = false     // идет фаза "вверх"
+        @State private var needsRelease = false      // палец уже оторван, но ждём завершения "вниз"
+
+        // Параметры анимации
+        private let downDuration: TimeInterval = 0.15
+        private let upDuration: TimeInterval = 0.15
+        private let pressedScale: CGFloat = 1.2
+        private let releasedScale: CGFloat = 1.0
+        private let pressedOpacity: CGFloat = 0.1
+        private let releasedOpacity: CGFloat = 0.0
+
         var body: some View {
             configuration.label
                 .background(
                     RoundedRectangle(cornerRadius: 100, style: .continuous)
-                        .fill(configuration.isPressed ? Color.gray.opacity(0.1) : Color.clear)
+                        .fill(Color.gray.opacity(highlightOpacity))
+                        .frame(maxWidth: 80, maxHeight: 70)
                 )
-                .scaleEffect(configuration.isPressed ? 0.8 : 1.0)
-                .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
+                .scaleEffect(scale)
                 .onChange(of: configuration.isPressed) { _, isPressed in
                     if isPressed {
+                        handlePressDown()
                         if !didTriggerPress {
                             didTriggerPress = true
                             onPress?()
                         }
                     } else {
-                        // Сбрасываем флаг, чтобы следующая итерация снова могла вызвать onPress
+                        // Только отмечаем, что нужен релиз. Реальная анимация "вверх" пойдет
+                        // либо сразу (если вниз уже завершилась), либо после её завершения.
                         didTriggerPress = false
+                        needsRelease = true
+                        tryStartReleaseIfPossible()
                     }
                 }
+        }
+
+        private func handlePressDown() {
+            // Если уже идёт "вниз" — игнорируем повтор
+            guard !isAnimatingDown else { return }
+
+            // Сбрасываем состояние релиза
+            needsRelease = false
+            isAnimatingUp = false
+
+            isAnimatingDown = true
+
+            // Запускаем последовательную анимацию "вниз" фиксированной длительности
+            Task { @MainActor in
+                withAnimation(.easeOut(duration: downDuration)) {
+                    scale = pressedScale
+                    highlightOpacity = pressedOpacity
+                }
+                // Ждём длительность "вниз"
+                try? await Task.sleep(nanoseconds: UInt64(downDuration * 1_000_000_000))
+
+                isAnimatingDown = false
+
+                // Если к этому моменту палец уже отпущен — запускаем релиз
+                tryStartReleaseIfPossible()
+            }
+        }
+
+        private func tryStartReleaseIfPossible() {
+            // Релиз можно начать, если:
+            // - палец уже оторван (needsRelease == true)
+            // - не идёт фаза "вниз"
+            // - не идёт уже фаза "вверх"
+            guard needsRelease, !isAnimatingDown, !isAnimatingUp else { return }
+
+            isAnimatingUp = true
+            needsRelease = false
+
+            Task { @MainActor in
+                withAnimation(.easeOut(duration: upDuration)) {
+                    scale = releasedScale
+                    highlightOpacity = releasedOpacity
+                }
+                try? await Task.sleep(nanoseconds: UInt64(upDuration * 1_000_000_000))
+                isAnimatingUp = false
+            }
         }
     }
 }
@@ -116,4 +183,11 @@ struct CustomKeyboard: View {
             }
         }
     }
+}
+
+#Preview {
+    CustomKeyboard(
+        onNumber: { _ in },
+        onDelete: { }
+    )
 }

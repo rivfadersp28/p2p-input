@@ -15,3 +15,7 @@ struct p2p_numberApp: App {
         }
     }
 }
+
+#Preview {
+    WithNumericTextView()
+}
