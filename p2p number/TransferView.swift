@@ -49,7 +49,7 @@ struct BigInputView: View {
     let digits: [Digit]
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 4) {
             ForEach(digits) { digit in
                 DigitView(digit: digit)
             }
@@ -64,6 +64,18 @@ struct BigInputView: View {
 
 // MARK: - Keyboard Button
 
+struct KeyPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 100, style: .continuous)
+                    .fill(configuration.isPressed ? Color.gray.opacity(0.1) : Color.clear)
+            )
+            .scaleEffect(configuration.isPressed ? 0.8 : 1.0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 struct KeyButton: View {
     let title: String
     let action: () -> Void
@@ -71,15 +83,14 @@ struct KeyButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.gray.opacity(0.15))
-                
                 Text(title)
-                    .font(.title.bold())
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
             }
-            .frame(height: 70)
+            .frame(maxWidth: .infinity, maxHeight: 70)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KeyPressStyle())
     }
 }
 
@@ -93,7 +104,7 @@ struct CustomKeyboard: View {
         ["1","2","3"],
         ["4","5","6"],
         ["7","8","9"],
-        ["","0","⌫"]
+        [",","0","⌫"]
     ]
     
     var body: some View {
