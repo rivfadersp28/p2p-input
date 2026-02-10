@@ -1,7 +1,12 @@
 import SwiftUI
 
-struct DigitAppearModifier: ViewModifier {
+struct DigitAppearModifier: ViewModifier, Animatable {
     var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
 
     func body(content: Content) -> some View {
         content
@@ -12,8 +17,13 @@ struct DigitAppearModifier: ViewModifier {
     }
 }
 
-private struct PlaceholderDisappearModifier: ViewModifier {
+private struct PlaceholderDisappearModifier: ViewModifier, Animatable {
     var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
 
     func body(content: Content) -> some View {
         content
