@@ -20,6 +20,9 @@ struct FormattedAmountView: View {
                     AnimatedDigitView(item: item)
                 }
             }
+
+            Text("\u{202F}₽")
+                .font(.system(size: 64, weight: .bold, design: .rounded))
         }
         .frame(maxWidth: .infinity, minHeight: 120)
     }
