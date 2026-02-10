@@ -134,22 +134,20 @@ struct KeyButton: View {
     }
 }
 
-struct CustomKeyboard: View {
-    let onNumber: (Int) -> Void
-    let onDelete: () -> Void
+private class KeyboardHaptic {
+    private var engine: CHHapticEngine?
+    private var player: CHHapticPatternPlayer?
 
-    let grid = [
-        ["1","2","3"],
-        ["4","5","6"],
-        ["7","8","9"],
-        [",","0","⌫"]
-    ]
-
-    private func playHaptic() {
+    init() {
         guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
         do {
             let engine = try CHHapticEngine()
+            engine.isAutoShutdownEnabled = true
+            engine.resetHandler = { [weak self] in
+                try? self?.engine?.start()
+            }
             try engine.start()
+
             let event = CHHapticEvent(
                 eventType: .hapticTransient,
                 parameters: [
@@ -159,10 +157,28 @@ struct CustomKeyboard: View {
                 relativeTime: 0
             )
             let pattern = try CHHapticPattern(events: [event], parameters: [])
-            let player = try engine.makePlayer(with: pattern)
-            try player.start(atTime: 0)
+            player = try engine.makePlayer(with: pattern)
+            self.engine = engine
         } catch { }
     }
+
+    func play() {
+        try? player?.start(atTime: 0)
+    }
+}
+
+struct CustomKeyboard: View {
+    let onNumber: (Int) -> Void
+    let onDelete: () -> Void
+
+    @State private var haptic = KeyboardHaptic()
+
+    let grid = [
+        ["1","2","3"],
+        ["4","5","6"],
+        ["7","8","9"],
+        [",","0","⌫"]
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -174,20 +190,20 @@ struct CustomKeyboard: View {
                         } else if key == "⌫" {
                             KeyButton(
                                 title: key,
-                                onPress: { playHaptic() },
+                                onPress: { haptic.play() },
                                 onTap: { onDelete() }
                             )
                         } else if Int(key) != nil {
                             KeyButton(
                                 title: key,
-                                onPress: { playHaptic() },
+                                onPress: { haptic.play() },
                                 onTap: { onNumber(Int(key)!) }
                             )
                         } else {
                             // Например, запятая — просто haptic (или можно ничего)
                             KeyButton(
                                 title: key,
-                                onPress: { playHaptic() },
+                                onPress: { haptic.play() },
                                 onTap: { /* ничего */ }
                             )
                         }
