@@ -15,7 +15,6 @@ struct FormattedAmountView: View {
                 if item.id == .placeholder {
                     Text(String(item.char))
                         .font(.system(size: 64, weight: .bold, design: .rounded))
-                        .monospacedDigit()
                         .transition(.placeholderDisappearUp)
                 } else {
                     AnimatedDigitView(item: item)
@@ -34,7 +33,6 @@ private struct AnimatedDigitView: View {
     var body: some View {
         Text(String(item.char))
             .font(.system(size: 64, weight: .bold, design: .rounded))
-            .monospacedDigit()
             .modifier(DigitAppearModifier(progress: appeared ? 1 : 0))
             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: appeared)
             .transition(.asymmetric(
