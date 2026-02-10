@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CoreHaptics
 
 struct KeyPressStyle: ButtonStyle {
     // Замыкание, вызываемое при касании (touch down)
@@ -144,11 +145,23 @@ struct CustomKeyboard: View {
         [",","0","⌫"]
     ]
 
-    // Легкий haptic-генератор
-    private func hapticLight() {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-        generator.impactOccurred()
+    private func playHaptic() {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        do {
+            let engine = try CHHapticEngine()
+            try engine.start()
+            let event = CHHapticEvent(
+                eventType: .hapticTransient,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.9)
+                ],
+                relativeTime: 0
+            )
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let player = try engine.makePlayer(with: pattern)
+            try player.start(atTime: 0)
+        } catch { }
     }
 
     var body: some View {
@@ -161,20 +174,20 @@ struct CustomKeyboard: View {
                         } else if key == "⌫" {
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { playHaptic() },
                                 onTap: { onDelete() }
                             )
                         } else if Int(key) != nil {
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { playHaptic() },
                                 onTap: { onNumber(Int(key)!) }
                             )
                         } else {
                             // Например, запятая — просто haptic (или можно ничего)
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { playHaptic() },
                                 onTap: { /* ничего */ }
                             )
                         }
