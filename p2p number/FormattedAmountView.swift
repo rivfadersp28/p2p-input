@@ -21,7 +21,7 @@ struct FormattedAmountView: View {
                 }
             }
 
-            Text("₽")
+            Text("\u{202F}₽")
                 .font(.system(size: 64, weight: .bold, design: .rounded))
         }
         .frame(maxWidth: .infinity, minHeight: 120)
