@@ -62,7 +62,7 @@ private struct AnimatedDigitView: View {
         Text(String(item.char))
             .font(.system(size: 64, weight: .bold, design: .rounded))
             .modifier(DigitAppearModifier(progress: appeared ? 1 : 0))
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: appeared)
+            .animation(.spring(response: 0.28, dampingFraction: 0.7), value: appeared)
             .transition(.asymmetric(
                 insertion: .identity,
                 removal: .digitAppear
@@ -71,4 +71,8 @@ private struct AnimatedDigitView: View {
                 appeared = true
             }
     }
+}
+
+#Preview {
+    WithNumericTextView()
 }

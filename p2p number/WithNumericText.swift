@@ -9,8 +9,8 @@ struct WithNumericTextView: View {
 
             FormattedAmountView(rawDigits: amountString)
                 .frame(maxWidth: .infinity, minHeight: 120)
-                .padding(.horizontal)
-
+                .padding(.leading, 10)
+            
             Spacer()
 
             CustomKeyboard(
