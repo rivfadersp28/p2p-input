@@ -133,9 +133,24 @@ struct KeyButton: View {
     }
 }
 
+private class KeyboardHaptic {
+    private let generator = UIImpactFeedbackGenerator(style: .rigid)
+
+    init() {
+        generator.prepare()
+    }
+
+    func play() {
+        generator.impactOccurred(intensity: 0.6)
+        generator.prepare()
+    }
+}
+
 struct CustomKeyboard: View {
     let onNumber: (Int) -> Void
     let onDelete: () -> Void
+
+    @State private var haptic = KeyboardHaptic()
 
     let grid = [
         ["1","2","3"],
@@ -143,13 +158,6 @@ struct CustomKeyboard: View {
         ["7","8","9"],
         [",","0","⌫"]
     ]
-
-    // Легкий haptic-генератор
-    private func hapticLight() {
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.prepare()
-        generator.impactOccurred()
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -161,20 +169,20 @@ struct CustomKeyboard: View {
                         } else if key == "⌫" {
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { haptic.play() },
                                 onTap: { onDelete() }
                             )
                         } else if Int(key) != nil {
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { haptic.play() },
                                 onTap: { onNumber(Int(key)!) }
                             )
                         } else {
                             // Например, запятая — просто haptic (или можно ничего)
                             KeyButton(
                                 title: key,
-                                onPress: { hapticLight() },
+                                onPress: { haptic.play() },
                                 onTap: { /* ничего */ }
                             )
                         }
