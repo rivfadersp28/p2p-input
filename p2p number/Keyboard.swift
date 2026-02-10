@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import CoreHaptics
 
 struct KeyPressStyle: ButtonStyle {
     // Замыкание, вызываемое при касании (touch down)
@@ -135,35 +134,15 @@ struct KeyButton: View {
 }
 
 private class KeyboardHaptic {
-    private var engine: CHHapticEngine?
-    private var player: CHHapticPatternPlayer?
+    private let generator = UIImpactFeedbackGenerator(style: .rigid)
 
     init() {
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
-        do {
-            let engine = try CHHapticEngine()
-            engine.isAutoShutdownEnabled = true
-            engine.resetHandler = { [weak self] in
-                try? self?.engine?.start()
-            }
-            try engine.start()
-
-            let event = CHHapticEvent(
-                eventType: .hapticTransient,
-                parameters: [
-                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
-                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.9)
-                ],
-                relativeTime: 0
-            )
-            let pattern = try CHHapticPattern(events: [event], parameters: [])
-            player = try engine.makePlayer(with: pattern)
-            self.engine = engine
-        } catch { }
+        generator.prepare()
     }
 
     func play() {
-        try? player?.start(atTime: 0)
+        generator.impactOccurred(intensity: 0.6)
+        generator.prepare()
     }
 }
 
