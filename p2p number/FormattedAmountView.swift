@@ -23,7 +23,7 @@ struct FormattedAmountView: View {
                 ? min(1.0, geo.size.width / contentWidth)
                 : 1.0
 
-            HStack(spacing: 2) {
+            HStack(spacing: 0) {
                 ForEach(renderItems) { item in
                     if item.id == .placeholder {
                         Text(String(item.char))

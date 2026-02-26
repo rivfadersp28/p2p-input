@@ -110,6 +110,7 @@ struct KeyPressStyle: ButtonStyle {
 
 struct KeyButton: View {
     let title: String
+    var symbolScale: CGFloat = 1
     // onPress — при касании (touch down)
     var onPress: (() -> Void)? = nil
     // onTap — при отпускании (touch up inside), стандартное действие
@@ -125,8 +126,9 @@ struct KeyButton: View {
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
                     .foregroundStyle(Color(hex: "#333333"))
+                    .scaleEffect(symbolScale)
             }
-            .frame(maxWidth: .infinity, maxHeight: 80)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())
         }
         .buttonStyle(KeyPressStyle(onPress: onPress))
@@ -149,8 +151,11 @@ private class KeyboardHaptic {
 struct CustomKeyboard: View {
     let onNumber: (Int) -> Void
     let onDelete: () -> Void
+    var symbolScale: CGFloat = 1
+    var rowSpacing: CGFloat = 0
 
     @State private var haptic = KeyboardHaptic()
+    private let rowHeight: CGFloat = 70
 
     let grid = [
         ["1","2","3"],
@@ -160,21 +165,23 @@ struct CustomKeyboard: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: rowSpacing) {
             ForEach(grid, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(row, id: \.self) { key in
                         if key == "" {
-                            Color.clear.frame(height: 70)
+                            Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else if key == "⌫" {
                             KeyButton(
                                 title: key,
+                                symbolScale: symbolScale,
                                 onPress: { haptic.play() },
                                 onTap: { onDelete() }
                             )
                         } else if Int(key) != nil {
                             KeyButton(
                                 title: key,
+                                symbolScale: symbolScale,
                                 onPress: { haptic.play() },
                                 onTap: { onNumber(Int(key)!) }
                             )
@@ -182,12 +189,14 @@ struct CustomKeyboard: View {
                             // Например, запятая — просто haptic (или можно ничего)
                             KeyButton(
                                 title: key,
+                                symbolScale: symbolScale,
                                 onPress: { haptic.play() },
                                 onTap: { /* ничего */ }
                             )
                         }
                     }
                 }
+                .frame(height: rowHeight)
             }
         }
     }
